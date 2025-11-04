@@ -76,6 +76,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Instagram 컬러 시스템 */
+  --instagram-blue: #0095f6;
+  --like: #ed4956;
+  --text-secondary: #8e8e8e;
+  --instagram-background: #fafafa;
+  --instagram-card-background: #ffffff;
+  --instagram-border: #dbdbdb;
 }
 
 .dark {

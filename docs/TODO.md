@@ -43,14 +43,14 @@
 
 ## 3. 홈 피드 페이지
 
-- [ ] 타입 정의
-  - [ ] `lib/types.ts` - Post, User, Like, Comment, Follow 타입
-- [ ] PostCard 컴포넌트
-  - [ ] `components/post/PostCard.tsx` - 게시물 카드 전체 구조
-  - [ ] PostCard 헤더 (프로필 이미지 32px, 사용자명, 시간, ⋯ 메뉴)
-  - [ ] PostCard 이미지 영역 (1:1 정사각형)
-  - [ ] PostCard 액션 버튼 (좋아요 ❤️, 댓글 💬, 공유 ✈️, 북마크 🔖)
-  - [ ] PostCard 컨텐츠 (좋아요 수, 캡션, 댓글 미리보기 2개)
+- [x] 타입 정의
+  - [x] `lib/types.ts` - Post, User, Like, Comment, Follow 타입
+- [x] PostCard 컴포넌트
+  - [x] `components/post/PostCard.tsx` - 게시물 카드 전체 구조
+  - [x] PostCard 헤더 (프로필 이미지 32px, 사용자명, 시간, ⋯ 메뉴)
+  - [x] PostCard 이미지 영역 (1:1 정사각형)
+  - [x] PostCard 액션 버튼 (좋아요 ❤️, 댓글 💬, 공유 ✈️, 북마크 🔖)
+  - [x] PostCard 컨텐츠 (좋아요 수, 캡션, 댓글 미리보기 2개)
 - [ ] 로딩 UI
   - [ ] `components/ui/Skeleton.tsx` - Skeleton 컴포넌트
   - [ ] `components/post/PostCardSkeleton.tsx` - PostCard 스켈레톤
@@ -58,7 +58,7 @@
   - [ ] `components/post/PostFeed.tsx` - 게시물 피드 목록
   - [ ] 무한 스크롤 (Intersection Observer, 10개씩)
 - [ ] API 라우트
-  - [ ] `app/api/posts/route.ts` - GET (페이지네이션)
+  - [x] `app/api/posts/route.ts` - GET (페이지네이션)
   - [ ] `app/api/posts/route.ts` - POST (게시물 작성)
   - [ ] `app/api/posts/[postId]/route.ts` - GET (상세)
   - [ ] `app/api/posts/[postId]/route.ts` - DELETE (삭제)
@@ -67,16 +67,16 @@
 
 ## 4. 좋아요 기능
 
-- [ ] 좋아요 API
-  - [ ] `app/api/likes/route.ts` - POST (좋아요 추가)
-  - [ ] `app/api/likes/route.ts` - DELETE (좋아요 제거)
-- [ ] 좋아요 UI 및 인터랙션
-  - [ ] 좋아요 버튼 (빈 하트 ↔ 빨간 하트)
-  - [ ] 좋아요 애니메이션 (클릭 시 scale(1.3) → scale(1))
+- [x] 좋아요 API
+  - [x] `app/api/likes/route.ts` - POST (좋아요 추가)
+  - [x] `app/api/likes/route.ts` - DELETE (좋아요 제거)
+- [x] 좋아요 UI 및 인터랙션
+  - [x] 좋아요 버튼 (빈 하트 ↔ 빨간 하트)
+  - [x] 좋아요 애니메이션 (클릭 시 scale(1.3) → scale(1))
   - [ ] 더블탭 좋아요 (모바일, 이미지 더블탭 시 큰 하트 등장)
-- [ ] 좋아요 상태 관리
-  - [ ] 현재 사용자 좋아요 여부 확인
-  - [ ] 좋아요 수 실시간 업데이트
+- [x] 좋아요 상태 관리
+  - [x] 현재 사용자 좋아요 여부 확인
+  - [x] 좋아요 수 실시간 업데이트
 
 ---
 
@@ -103,11 +103,11 @@
 - [ ] 댓글 컴포넌트
   - [ ] `components/comment/CommentList.tsx` - 댓글 목록
   - [ ] `components/comment/CommentForm.tsx` - 댓글 작성 폼
-  - [ ] PostCard에 댓글 미리보기 (최신 2개)
+  - [x] PostCard에 댓글 미리보기 (최신 2개)
 - [ ] 댓글 API
   - [ ] `app/api/comments/route.ts` - POST (댓글 작성)
   - [ ] `app/api/comments/[commentId]/route.ts` - DELETE (댓글 삭제)
-  - [ ] `app/api/comments/route.ts` - GET (댓글 목록, postId 쿼리)
+  - [x] `app/api/comments/route.ts` - GET (댓글 목록, postId 쿼리)
 - [ ] 댓글 기능
   - [ ] 댓글 작성 (Enter 또는 "게시" 버튼)
   - [ ] 댓글 삭제 (본인만, ⋯ 메뉴)
