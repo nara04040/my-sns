@@ -57,11 +57,11 @@
 - [x] PostFeed 컴포넌트
   - [x] `components/post/PostFeed.tsx` - 게시물 피드 목록
   - [x] 무한 스크롤 (Intersection Observer, 10개씩)
-- [ ] API 라우트
+- [x] API 라우트
   - [x] `app/api/posts/route.ts` - GET (페이지네이션)
-  - [ ] `app/api/posts/route.ts` - POST (게시물 작성)
-  - [ ] `app/api/posts/[postId]/route.ts` - GET (상세)
-  - [ ] `app/api/posts/[postId]/route.ts` - DELETE (삭제)
+  - [x] `app/api/posts/route.ts` - POST (게시물 작성)
+  - [x] `app/api/posts/[postId]/route.ts` - GET (상세)
+  - [x] `app/api/posts/[postId]/route.ts` - DELETE (삭제)
 
 ---
 
@@ -82,89 +82,89 @@
 
 ## 5. 게시물 작성 기능
 
-- [ ] 게시물 작성 모달
-  - [ ] `components/post/CreatePostModal.tsx` - 모달 컴포넌트
-  - [ ] 이미지 업로드 UI (드래그 앤 드롭 또는 파일 선택)
-  - [ ] 이미지 미리보기
-  - [ ] 캡션 입력 필드 (최대 2,200자)
-  - [ ] 파일 크기 검증 (최대 5MB)
-- [ ] 이미지 업로드
-  - [ ] Supabase Storage 업로드 로직
-  - [ ] 파일 형식 검증 (이미지 파일만)
-  - [ ] 업로드 진행 상태 표시
-- [ ] 게시물 작성 API
-  - [ ] `app/api/posts/route.ts` - POST (이미지 업로드 + 게시물 생성)
-  - [ ] 에러 핸들링
+- [x] 게시물 작성 모달
+  - [x] `components/post/CreatePostModal.tsx` - 모달 컴포넌트
+  - [x] 이미지 업로드 UI (드래그 앤 드롭 또는 파일 선택)
+  - [x] 이미지 미리보기
+  - [x] 캡션 입력 필드 (최대 2,200자)
+  - [x] 파일 크기 검증 (최대 5MB)
+- [x] 이미지 업로드
+  - [x] Supabase Storage 업로드 로직
+  - [x] 파일 형식 검증 (이미지 파일만)
+  - [x] 업로드 진행 상태 표시
+- [x] 게시물 작성 API
+  - [x] `app/api/posts/route.ts` - POST (이미지 업로드 + 게시물 생성)
+  - [x] 에러 핸들링
 
 ---
 
 ## 6. 댓글 기능
 
 - [ ] 댓글 컴포넌트
-  - [ ] `components/comment/CommentList.tsx` - 댓글 목록
-  - [ ] `components/comment/CommentForm.tsx` - 댓글 작성 폼
+  - [x] `components/comment/CommentList.tsx` - 댓글 목록
+  - [x] `components/comment/CommentForm.tsx` - 댓글 작성 폼
   - [x] PostCard에 댓글 미리보기 (최신 2개)
-- [ ] 댓글 API
-  - [ ] `app/api/comments/route.ts` - POST (댓글 작성)
-  - [ ] `app/api/comments/[commentId]/route.ts` - DELETE (댓글 삭제)
+- [x] 댓글 API
+  - [x] `app/api/comments/route.ts` - POST (댓글 작성)
+  - [x] `app/api/comments/[commentId]/route.ts` - DELETE (댓글 삭제)
   - [x] `app/api/comments/route.ts` - GET (댓글 목록, postId 쿼리)
 - [ ] 댓글 기능
-  - [ ] 댓글 작성 (Enter 또는 "게시" 버튼)
-  - [ ] 댓글 삭제 (본인만, ⋯ 메뉴)
-  - [ ] 댓글 실시간 업데이트
+  - [x] 댓글 작성 (Enter 또는 "게시" 버튼)
+  - [x] 댓글 삭제 (본인만, ⋯ 메뉴)
+  - [x] 댓글 실시간 업데이트
 
 ---
 
 ## 7. 게시물 상세 모달/페이지
 
-- [ ] 게시물 상세 모달 (데스크톱)
-  - [ ] `components/post/PostModal.tsx` - 모달 컴포넌트
-  - [ ] 이미지 영역 (50% 너비)
-  - [ ] 댓글 영역 (50% 너비, 스크롤 가능)
-  - [ ] 닫기 버튼 (✕)
-- [ ] 게시물 상세 페이지 (모바일)
-  - [ ] `app/(main)/post/[postId]/page.tsx` - 동적 라우트
-  - [ ] 전체 페이지 레이아웃
-- [ ] 게시물 삭제 기능
-  - [ ] ⋯ 메뉴 (본인 게시물만)
-  - [ ] 삭제 확인 다이얼로그
-  - [ ] 삭제 후 피드 리다이렉트
+- [x] 게시물 상세 모달 (데스크톱)
+  - [x] `components/post/PostModal.tsx` - 모달 컴포넌트
+  - [x] 이미지 영역 (50% 너비)
+  - [x] 댓글 영역 (50% 너비, 스크롤 가능)
+  - [x] 닫기 버튼 (✕)
+- [x] 게시물 상세 페이지 (모바일)
+  - [x] `app/(main)/post/[postId]/page.tsx` - 동적 라우트
+  - [x] 전체 페이지 레이아웃
+- [x] 게시물 삭제 기능
+  - [x] ⋯ 메뉴 (본인 게시물만)
+  - [x] 삭제 확인 다이얼로그
+  - [x] 삭제 후 피드 리다이렉트
 
 ---
 
 ## 8. 프로필 페이지
 
-- [ ] 프로필 페이지 라우트
-  - [ ] `app/(main)/profile/page.tsx` - 내 프로필
-  - [ ] `app/(main)/profile/[userId]/page.tsx` - 다른 사용자 프로필
-- [ ] 프로필 헤더
-  - [ ] `components/profile/ProfileHeader.tsx` - 프로필 헤더
-  - [ ] 프로필 이미지 (150px 데스크톱 / 90px 모바일)
-  - [ ] 사용자명, 통계 (게시물 수, 팔로워 수, 팔로잉 수)
-  - [ ] 팔로우/팔로잉 버튼 (다른 사용자 프로필)
-- [ ] 프로필 API
-  - [ ] `app/api/users/[userId]/route.ts` - GET (프로필 정보)
-- [ ] 게시물 그리드
-  - [ ] `components/profile/PostGrid.tsx` - 3열 그리드 레이아웃
-  - [ ] 게시물 썸네일 (1:1 정사각형)
-  - [ ] Hover 시 좋아요/댓글 수 표시
-  - [ ] 클릭 시 게시물 상세 모달/페이지 이동
+- [x] 프로필 페이지 라우트
+  - [x] `app/(main)/profile/page.tsx` - 내 프로필
+  - [x] `app/(main)/profile/[userId]/page.tsx` - 다른 사용자 프로필
+- [x] 프로필 헤더
+  - [x] `components/profile/ProfileHeader.tsx` - 프로필 헤더
+  - [x] 프로필 이미지 (150px 데스크톱 / 90px 모바일)
+  - [x] 사용자명, 통계 (게시물 수, 팔로워 수, 팔로잉 수)
+  - [x] 팔로우/팔로잉 버튼 (다른 사용자 프로필)
+- [x] 프로필 API
+  - [x] `app/api/users/[userId]/route.ts` - GET (프로필 정보)
+- [x] 게시물 그리드
+  - [x] `components/profile/PostGrid.tsx` - 3열 그리드 레이아웃
+  - [x] 게시물 썸네일 (1:1 정사각형)
+  - [x] Hover 시 좋아요/댓글 수 표시
+  - [x] 클릭 시 게시물 상세 모달/페이지 이동
 
 ---
 
 ## 9. 팔로우 기능
 
-- [ ] 팔로우 API
-  - [ ] `app/api/follows/route.ts` - POST (팔로우 추가)
-  - [ ] `app/api/follows/route.ts` - DELETE (팔로우 제거)
-  - [ ] `app/api/follows/route.ts` - GET (팔로우 상태 확인)
-- [ ] 팔로우 UI
-  - [ ] 팔로우 버튼 (미팔로우: 파란색 "팔로우")
-  - [ ] 팔로잉 버튼 (팔로우 중: 회색 "팔로잉")
-  - [ ] Hover 시 "언팔로우" (빨간 테두리)
-- [ ] 팔로우 상태 관리
-  - [ ] 현재 사용자 팔로우 여부 확인
-  - [ ] 팔로워/팔로잉 수 실시간 업데이트
+- [x] 팔로우 API
+  - [x] `app/api/follows/route.ts` - POST (팔로우 추가)
+  - [x] `app/api/follows/route.ts` - DELETE (팔로우 제거)
+  - [x] `app/api/follows/route.ts` - GET (팔로우 상태 확인)
+- [x] 팔로우 UI
+  - [x] 팔로우 버튼 (미팔로우: 파란색 "팔로우")
+  - [x] 팔로잉 버튼 (팔로우 중: 회색 "팔로잉")
+  - [x] Hover 시 "언팔로우" (빨간 테두리)
+- [x] 팔로우 상태 관리
+  - [x] 현재 사용자 팔로우 여부 확인
+  - [x] 팔로워/팔로잉 수 실시간 업데이트
 
 ---
 

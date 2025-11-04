@@ -9,6 +9,7 @@ import type { PostWithUserAndStats } from "@/lib/types";
  *
  * @query limit - 가져올 게시물 개수 (기본값: 10)
  * @query offset - 건너뛸 개수 (기본값: 0)
+ * @query userId - 특정 사용자의 게시물만 필터링 (선택적)
  *
  * @returns 게시물 목록 (사용자 정보, 통계 포함)
  */
@@ -17,16 +18,26 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const filterUserId = searchParams.get("userId");
 
     const supabase = getServiceRoleClient();
 
     // posts 테이블과 post_stats 뷰를 조인하여 게시물과 통계 가져오기
     // post_stats 뷰에는 updated_at이 없으므로 posts 테이블과 조인 필요
-    const { data: posts, error: postsError } = await supabase
+    let query = supabase
       .from("posts")
       .select("*")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order("created_at", { ascending: false });
+
+    // filterUserId가 제공된 경우 필터링
+    if (filterUserId) {
+      query = query.eq("user_id", filterUserId);
+    }
+
+    const { data: posts, error: postsError } = await query.range(
+      offset,
+      offset + limit - 1
+    );
 
     if (postsError) {
       console.error("Error fetching posts:", postsError);
@@ -121,9 +132,11 @@ export async function GET(request: NextRequest) {
     });
 
     // 다음 페이지 존재 여부 확인
-    const { count } = await supabase
-      .from("posts")
-      .select("*", { count: "exact", head: true });
+    let countQuery = supabase.from("posts").select("*", { count: "exact", head: true });
+    if (filterUserId) {
+      countQuery = countQuery.eq("user_id", filterUserId);
+    }
+    const { count } = await countQuery;
     const hasMore = (count || 0) > offset + limit;
 
     // 각 게시물에 isLiked 속성 추가
@@ -138,6 +151,87 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error in GET /api/posts:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * 게시물 생성 API
+ * POST /api/posts
+ *
+ * @body { imageUrl: string; caption?: string }
+ *
+ * @returns 생성된 게시물 (작성자 정보, 통계 포함)
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json().catch(() => null);
+    const imageUrl = body?.imageUrl as string | undefined;
+    const caption = (body?.caption as string | undefined) ?? null;
+
+    if (!imageUrl || typeof imageUrl !== "string") {
+      return NextResponse.json(
+        { error: "imageUrl is required" },
+        { status: 400 }
+      );
+    }
+
+    const supabase = getServiceRoleClient();
+
+    // Clerk userId -> Supabase users.id 매핑
+    const { data: currentUser, error: currentUserError } = await supabase
+      .from("users")
+      .select("id, clerk_id, name, created_at")
+      .eq("clerk_id", userId)
+      .single();
+
+    if (currentUserError || !currentUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // 게시물 생성
+    const { data: inserted, error: insertError } = await supabase
+      .from("posts")
+      .insert({
+        user_id: currentUser.id,
+        image_url: imageUrl,
+        caption,
+      })
+      .select("*")
+      .single();
+
+    if (insertError || !inserted) {
+      console.error("Error creating post:", insertError);
+      return NextResponse.json(
+        { error: "Failed to create post", details: insertError?.message },
+        { status: 500 }
+      );
+    }
+
+    // 통계(기본 0) 조합 및 응답 형태 맞추기
+    const responsePost: PostWithUserAndStats = {
+      ...inserted,
+      user: currentUser,
+      likes_count: 0,
+      comments_count: 0,
+      isLiked: false,
+    } as PostWithUserAndStats;
+
+    return NextResponse.json({ post: responsePost });
+  } catch (error) {
+    console.error("Error in POST /api/posts:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

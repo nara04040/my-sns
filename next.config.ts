@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { hostname: "img.clerk.com" },
       { hostname: "picsum.photos" },
+      // Supabase Storage public URL (images)
+      { hostname: "*.supabase.co" },
     ],
   },
 };

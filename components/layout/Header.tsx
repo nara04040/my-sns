@@ -15,15 +15,19 @@
  * - @/components/ui/button: 버튼 컴포넌트
  */
 
-import { Heart, Send, User } from "lucide-react";
+import { Heart, PlusSquare, Send, User } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import CreatePostModal from "@/components/post/CreatePostModal";
 
 export function Header() {
   const { user, isLoaded } = useUser();
-  const profileHref = isLoaded && user ? `/profile/${user.id}` : "/profile";
+  // 내 프로필은 항상 /profile 사용 (서버에서 현재 사용자 정보 조회)
+  const profileHref = "/profile";
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
     <header className="md:hidden fixed top-0 left-0 right-0 h-[60px] bg-white border-b border-[#dbdbdb] z-50">
@@ -59,6 +63,17 @@ export function Header() {
         ) : (
           /* 인증된 경우: 기존 UI (알림 + DM + 프로필) */
           <div className="flex items-center gap-4">
+            {/* 만들기 버튼 */}
+            <Button
+              type="button"
+              size="sm"
+              className="bg-[var(--instagram-blue)] text-white hover:bg-[var(--instagram-blue)]/90 h-8 px-3 text-sm"
+              onClick={() => setIsCreateOpen(true)}
+              aria-label="새 게시물 만들기"
+            >
+              <PlusSquare className="w-4 h-4" />
+              만들기
+            </Button>
             {/* 알림 (나중에 구현) */}
             <Link
               href="/notifications"
@@ -85,6 +100,8 @@ export function Header() {
           </div>
         )}
       </div>
+      {/* 게시물 작성 모달 */}
+      <CreatePostModal open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </header>
   );
 }

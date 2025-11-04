@@ -28,6 +28,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 import type { PostWithUserAndStats, CommentWithUser } from "@/lib/types";
+import { CommentList } from "@/components/comment/CommentList";
+import { CommentForm } from "@/components/comment/CommentForm";
 
 interface PostCardProps {
   /** 게시물 정보 (사용자 정보, 통계 포함) */
@@ -48,9 +50,10 @@ export function PostCard({
   const [isAnimating, setIsAnimating] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [comments, setComments] = useState<CommentWithUser[]>(initialComments);
+  const [commentsRefetchKey, setCommentsRefetchKey] = useState(0);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
 
   // 캡션 표시 여부 결정 (2줄 초과 시 "... 더 보기" 표시)
-  const captionLines = post.caption?.split("\n") || [];
   const shouldShowMore = post.caption && post.caption.length > 100;
 
   // 좋아요 토글
@@ -111,8 +114,14 @@ export function PostCard({
     }
   }, [post.id, post.comments_count, comments.length]);
 
+  const handleOpenDetail = () => {
+    // 모든 환경에서 상세 페이지로 이동
+    window.location.href = `/post/${post.id}`;
+  };
+
   return (
-    <article className="bg-[var(--instagram-card-background)] border border-[var(--instagram-border)] rounded-sm mb-4">
+    <>
+      <article className="bg-[var(--instagram-card-background)] border border-[var(--instagram-border)] rounded-sm mb-4">
       {/* 헤더 영역 (60px) */}
       <header className="flex items-center justify-between px-4 py-3 h-[60px]">
         <div className="flex items-center gap-3">
@@ -148,7 +157,7 @@ export function PostCard({
       </header>
 
       {/* 이미지 영역 (1:1 정사각형) */}
-      <div className="relative w-full aspect-square bg-gray-100">
+      <div className="relative w-full aspect-square bg-gray-100 cursor-pointer" onClick={handleOpenDetail}>
         <Image
           src={post.image_url}
           alt={post.caption || "게시물 이미지"}
@@ -178,8 +187,10 @@ export function PostCard({
             />
           </button>
           <button
+            onClick={() => setIsCommentsOpen((v) => !v)}
             className="hover:opacity-50 transition-opacity"
             aria-label="댓글"
+            aria-expanded={isCommentsOpen}
           >
             <MessageCircle className="w-6 h-6" />
           </button>
@@ -233,12 +244,13 @@ export function PostCard({
         )}
 
         {/* 댓글 미리보기 */}
-        {post.comments_count > 0 && (
+        {post.comments_count > 0 && !isCommentsOpen && (
           <div className="space-y-1">
             {comments.length > 2 && (
               <button
                 className="text-sm text-[var(--text-secondary)] hover:text-black"
                 aria-label="댓글 모두 보기"
+                onClick={handleOpenDetail}
               >
                 댓글 {post.comments_count}개 모두 보기
               </button>
@@ -257,7 +269,26 @@ export function PostCard({
           </div>
         )}
       </div>
-    </article>
+
+      {/* 인라인 확장 영역: 전체 댓글 목록 + 입력 폼 (열렸을 때만 마운트) */}
+      {isCommentsOpen && (
+        <div className="px-4 pb-3 transition-all">
+          <CommentList
+            postId={post.id}
+            limit={10}
+            refetchKey={commentsRefetchKey}
+            enableDelete
+            onMutated={() => setCommentsRefetchKey((v) => v + 1)}
+          />
+          <CommentForm
+            postId={post.id}
+            autoFocus
+            onSubmitted={() => setCommentsRefetchKey((v) => v + 1)}
+          />
+        </div>
+      )}
+      </article>
+    </>
   );
 }
 

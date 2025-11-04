@@ -63,7 +63,8 @@ const navItems: NavItem[] = [
 export function BottomNav() {
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
-  const profileHref = isLoaded && user ? `/profile/${user.id}` : "/profile";
+  // 내 프로필은 항상 /profile 사용 (서버에서 현재 사용자 정보 조회)
+  const profileHref = "/profile";
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[50px] bg-white border-t border-[#dbdbdb] z-50">
