@@ -54,9 +54,9 @@
 - [x] 로딩 UI
   - [x] `components/ui/skeleton.tsx` - Skeleton 컴포넌트
   - [x] `components/post/PostCardSkeleton.tsx` - PostCard 스켈레톤
-- [ ] PostFeed 컴포넌트
-  - [ ] `components/post/PostFeed.tsx` - 게시물 피드 목록
-  - [ ] 무한 스크롤 (Intersection Observer, 10개씩)
+- [x] PostFeed 컴포넌트
+  - [x] `components/post/PostFeed.tsx` - 게시물 피드 목록
+  - [x] 무한 스크롤 (Intersection Observer, 10개씩)
 - [ ] API 라우트
   - [x] `app/api/posts/route.ts` - GET (페이지네이션)
   - [ ] `app/api/posts/route.ts` - POST (게시물 작성)
@@ -171,20 +171,20 @@
 ## 10. 스타일링 및 디자인
 
 - [ ] 컬러 시스템
-  - [x] `app/globals.css` - 기본 스타일 설정 (Instagram 컬러 변수 추가 필요)
-    - [ ] `--instagram-blue: #0095f6`
-    - [ ] `--background: #fafafa`
-    - [ ] `--card-background: #ffffff`
-    - [ ] `--border: #dbdbdb`
-    - [ ] `--text-primary: #262626`
-    - [ ] `--text-secondary: #8e8e8e`
-    - [ ] `--like: #ed4956`
+  - [x] `app/globals.css` - 기본 스타일 설정 (Instagram 컬러 변수 추가 완료)
+    - [x] `--instagram-blue: #0095f6`
+    - [x] `--instagram-background: #fafafa`
+    - [x] `--instagram-card-background: #ffffff`
+    - [x] `--instagram-border: #dbdbdb`
+    - [ ] `--text-primary: #262626` (기본 foreground 사용)
+    - [x] `--text-secondary: #8e8e8e`
+    - [x] `--like: #ed4956`
 - [ ] 타이포그래피
   - [x] 폰트 패밀리 설정 (Geist 폰트)
   - [ ] 텍스트 크기 변수 (xs, sm, base, xl)
   - [ ] 폰트 굵기 변수 (normal, semibold, bold)
 - [x] UI 컴포넌트
-  - [ ] `components/ui/Avatar.tsx` - 아바타 컴포넌트
+  - [x] `components/ui/avatar.tsx` - 아바타 컴포넌트
   - [x] `components/ui/Button.tsx` - 버튼 컴포넌트 (shadcn/ui)
   - [x] Dialog, Input, Textarea, Label, Form, Accordion 등 shadcn/ui 컴포넌트 설치
 
@@ -192,18 +192,18 @@
 
 ## 11. 애니메이션 및 인터랙션
 
-- [ ] 좋아요 애니메이션
-  - [ ] 클릭 시 하트 scale(1.3) → scale(1) (0.15초)
-  - [ ] 빈 하트 → 빨간 하트 전환
+- [x] 좋아요 애니메이션
+  - [x] 클릭 시 하트 scale(1.3) → scale(1) (0.15초)
+  - [x] 빈 하트 → 빨간 하트 전환
 - [ ] 더블탭 좋아요 애니메이션 (모바일)
   - [ ] 이미지 더블탭 감지
   - [ ] 큰 하트 등장 (fade in)
   - [ ] 1초 후 사라짐 (fade out)
-- [ ] 로딩 애니메이션
-  - [ ] Skeleton UI Shimmer 효과
-- [ ] 무한 스크롤
-  - [ ] Intersection Observer 구현
-  - [ ] 하단 도달 시 10개씩 로드
+- [x] 로딩 애니메이션
+  - [x] Skeleton UI Shimmer 효과
+- [x] 무한 스크롤
+  - [x] Intersection Observer 구현
+  - [x] 하단 도달 시 10개씩 로드
 
 ---
 

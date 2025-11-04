@@ -119,7 +119,7 @@ export function PostCard({
           <Link href={`/profile/${post.user.id}`}>
             <Avatar className="w-8 h-8">
               <AvatarImage
-                src={post.user.clerk_id} // Clerk 프로필 이미지는 추후 연동
+                src={undefined} // Clerk 프로필 이미지는 추후 연동
                 alt={post.user.name}
               />
               <AvatarFallback className="text-xs">
