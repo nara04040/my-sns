@@ -13,7 +13,7 @@
 - [x] 데이터베이스 설정
   - [x] Supabase 프로젝트 연동 확인
   - [x] 데이터베이스 스키마 확인 (sns_schema.sql)
-  - [ ] Supabase Storage 버킷 생성 (uploads)
+  - [x] Supabase Storage 버킷 생성 (uploads)
 - [x] 개발 도구 설정
   - [x] TypeScript 설정 (tsconfig.json)
   - [x] ESLint 설정 (eslint.config.mjs)
@@ -24,19 +24,20 @@
 
 ## 2. 레이아웃 구조
 
-- [ ] 레이아웃 컴포넌트
-  - [ ] `components/layout/Sidebar.tsx` - 데스크톱 사이드바 (244px)
-  - [ ] `components/layout/Sidebar.tsx` - 태블릿 아이콘 사이드바 (72px)
-  - [ ] `components/layout/Header.tsx` - 모바일 헤더 (60px)
-  - [ ] `components/layout/BottomNav.tsx` - 모바일 하단 네비게이션 (50px)
-- [ ] 라우트 그룹 설정
-  - [ ] `app/(main)/layout.tsx` - 메인 레이아웃 (Sidebar 통합)
-  - [ ] `app/(auth)/sign-in/page.tsx` - 로그인 페이지
-  - [ ] `app/(auth)/sign-up/page.tsx` - 회원가입 페이지
-- [ ] 반응형 레이아웃
-  - [ ] 데스크톱 (1024px+): Full Sidebar
-  - [ ] 태블릿 (768px~1023px): Icon-only Sidebar
-  - [ ] 모바일 (<768px): Header + BottomNav
+- [x] 레이아웃 컴포넌트
+  - [x] `components/layout/Sidebar.tsx` - 데스크톱 사이드바 (244px)
+  - [x] `components/layout/Sidebar.tsx` - 태블릿 아이콘 사이드바 (72px)
+  - [x] `components/layout/Header.tsx` - 모바일 헤더 (60px)
+  - [x] `components/layout/BottomNav.tsx` - 모바일 하단 네비게이션 (50px)
+- [x] 라우트 그룹 설정
+  - [x] `app/(main)/layout.tsx` - 메인 레이아웃 (Sidebar 통합)
+  - [x] `app/(main)/page.tsx` - 홈 피드 페이지 (기본 구조)
+  - [x] `app/(auth)/sign-in/page.tsx` - 로그인 페이지
+  - [x] `app/(auth)/sign-up/page.tsx` - 회원가입 페이지
+- [x] 반응형 레이아웃
+  - [x] 데스크톱 (1024px+): Full Sidebar (244px) + 메인 콘텐츠 (최대 630px, 중앙 정렬)
+  - [x] 태블릿 (768px~1023px): Icon-only Sidebar (72px) + 메인 콘텐츠 (전체 너비)
+  - [x] 모바일 (<768px): Header (60px) + 메인 콘텐츠 (전체 너비) + BottomNav (50px)
 
 ---
 
