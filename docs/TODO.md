@@ -51,9 +51,9 @@
   - [x] PostCard 이미지 영역 (1:1 정사각형)
   - [x] PostCard 액션 버튼 (좋아요 ❤️, 댓글 💬, 공유 ✈️, 북마크 🔖)
   - [x] PostCard 컨텐츠 (좋아요 수, 캡션, 댓글 미리보기 2개)
-- [ ] 로딩 UI
-  - [ ] `components/ui/Skeleton.tsx` - Skeleton 컴포넌트
-  - [ ] `components/post/PostCardSkeleton.tsx` - PostCard 스켈레톤
+- [x] 로딩 UI
+  - [x] `components/ui/skeleton.tsx` - Skeleton 컴포넌트
+  - [x] `components/post/PostCardSkeleton.tsx` - PostCard 스켈레톤
 - [ ] PostFeed 컴포넌트
   - [ ] `components/post/PostFeed.tsx` - 게시물 피드 목록
   - [ ] 무한 스크롤 (Intersection Observer, 10개씩)
