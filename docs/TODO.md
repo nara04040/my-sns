@@ -61,6 +61,17 @@
 
 ## 6. 댓글 기능
 
+- [x] 댓글 컴포넌트 구현
+  - [x] `components/comment/CommentList.tsx` - 댓글 목록 표시 및 삭제
+  - [x] `components/comment/CommentForm.tsx` - 댓글 작성 폼
+- [x] 댓글 API 구현
+  - [x] `app/api/comments/route.ts` - POST (댓글 작성)
+  - [x] `app/api/comments/[commentId]/route.ts` - DELETE (댓글 삭제)
+- [x] 댓글 기능 구현
+  - [x] 댓글 작성 (Enter 또는 "게시" 버튼)
+  - [x] 댓글 삭제 (본인만, hover 시 삭제 버튼 표시)
+  - [x] Optimistic UI 업데이트
+
 📄 [상세 문서 보기](./feature/comment/comment.md)
 
 ---
@@ -110,10 +121,10 @@
 - [x] 좋아요 애니메이션
   - [x] 클릭 시 하트 scale(1.3) → scale(1) (0.15초)
   - [x] 빈 하트 → 빨간 하트 전환
-- [ ] 더블탭 좋아요 애니메이션 (모바일)
-  - [ ] 이미지 더블탭 감지
-  - [ ] 큰 하트 등장 (fade in)
-  - [ ] 1초 후 사라짐 (fade out)
+- [x] 더블탭 좋아요 애니메이션 (모바일)
+  - [x] 이미지 더블탭 감지
+  - [x] 큰 하트 등장 (fade in)
+  - [x] 1초 후 사라짐 (fade out)
 - [x] 로딩 애니메이션
   - [x] Skeleton UI Shimmer 효과
 - [x] 무한 스크롤

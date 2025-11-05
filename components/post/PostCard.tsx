@@ -25,6 +25,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { CommentForm } from "@/components/comment/CommentForm";
+import { CommentList } from "@/components/comment/CommentList";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 import type { PostWithUserAndStats, CommentWithUser } from "@/lib/types";
@@ -48,6 +50,8 @@ export function PostCard({
   const [isAnimating, setIsAnimating] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [comments, setComments] = useState<CommentWithUser[]>(initialComments);
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.comments_count);
   
   // 더블탭 좋아요 관련 상태
   const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
@@ -157,7 +161,7 @@ export function PostCard({
 
   // 댓글 불러오기 (최신 2개)
   useEffect(() => {
-    if (comments.length === 0 && post.comments_count > 0) {
+    if (comments.length === 0 && commentsCount > 0) {
       fetch(`/api/comments?postId=${post.id}&limit=2`)
         .then((res) => res.json())
         .then((data) => {
@@ -169,7 +173,7 @@ export function PostCard({
           console.error("Error fetching comments:", error);
         });
     }
-  }, [post.id, post.comments_count, comments.length]);
+  }, [post.id, commentsCount, comments.length]);
 
   return (
     <article className="bg-[var(--instagram-card-background)] border border-[var(--instagram-border)] rounded-sm mb-4">
@@ -253,7 +257,11 @@ export function PostCard({
             />
           </button>
           <button
-            className="hover:opacity-50 transition-opacity"
+            onClick={() => setShowCommentForm(!showCommentForm)}
+            className={cn(
+              "hover:opacity-50 transition-opacity",
+              showCommentForm && "opacity-50"
+            )}
             aria-label="댓글"
           >
             <MessageCircle className="w-6 h-6" />
@@ -308,30 +316,44 @@ export function PostCard({
         )}
 
         {/* 댓글 미리보기 */}
-        {post.comments_count > 0 && (
+        {commentsCount > 0 && (
           <div className="space-y-1">
             {comments.length > 2 && (
               <button
                 className="text-sm text-[var(--text-secondary)] hover:text-black"
                 aria-label="댓글 모두 보기"
               >
-                댓글 {post.comments_count}개 모두 보기
+                댓글 {commentsCount}개 모두 보기
               </button>
             )}
-            {comments.slice(0, 2).map((comment) => (
-              <div key={comment.id} className="text-sm">
-                <Link
-                  href={`/profile/${comment.user.id}`}
-                  className="font-semibold hover:opacity-50 transition-opacity mr-2"
-                >
-                  {comment.user.name}
-                </Link>
-                <span>{comment.content}</span>
-              </div>
-            ))}
+            <CommentList
+              postId={post.id}
+              initialComments={comments.slice(0, 2)}
+              onCommentDeleted={(commentId) => {
+                // 댓글 삭제 시 목록에서 제거
+                setComments((prev) => prev.filter((c) => c.id !== commentId));
+                // 댓글 수 감소
+                setCommentsCount((prev) => Math.max(0, prev - 1));
+              }}
+            />
           </div>
         )}
       </div>
+
+      {/* 댓글 작성 폼 */}
+      {showCommentForm && (
+        <CommentForm
+          postId={post.id}
+          onCommentAdded={(comment) => {
+            // 댓글 목록에 추가 (최신순이므로 맨 앞에 추가)
+            setComments((prev) => [comment, ...prev]);
+            // 댓글 수 증가
+            setCommentsCount((prev) => prev + 1);
+            // 댓글 작성 완료 후 폼 닫기
+            setShowCommentForm(false);
+          }}
+        />
+      )}
     </article>
   );
 }
