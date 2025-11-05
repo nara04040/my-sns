@@ -58,18 +58,23 @@ export function PostCard({
   const [doubleTapHeartType, setDoubleTapHeartType] = useState<"like" | "unlike">("like");
   const lastTapTimeRef = useRef<number>(0);
   const doubleTapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const linkRef = useRef<HTMLAnchorElement>(null);
 
   // 캡션 표시 여부 결정 (2줄 초과 시 "... 더 보기" 표시)
   const captionLines = post.caption?.split("\n") || [];
   const shouldShowMore = post.caption && post.caption.length > 100;
 
   // 더블탭 감지 및 좋아요 처리
-  const handleDoubleTap = () => {
+  const handleDoubleTap = (e: React.MouseEvent) => {
     const now = Date.now();
     const timeSinceLastTap = now - lastTapTimeRef.current;
 
     // 이전 탭으로부터 300ms 이내면 더블탭으로 판단
     if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      // 더블탭이 감지된 경우에만 이벤트 차단
+      e.preventDefault();
+      e.stopPropagation();
+      
       // 애니메이션 중이면 무시
       if (showDoubleTapHeart) {
         return;
@@ -98,11 +103,15 @@ export function PostCard({
       // 첫 번째 탭이거나 시간이 지난 경우
       lastTapTimeRef.current = now;
 
-      // 300ms 후 타이머 초기화 (더블탭이 아닌 경우)
+      // 300ms 후 더블탭이 아니면 Link 클릭 (상세 페이지로 이동)
       if (doubleTapTimeoutRef.current) {
         clearTimeout(doubleTapTimeoutRef.current);
       }
       doubleTapTimeoutRef.current = setTimeout(() => {
+        // 더블탭이 감지되지 않았으므로 일반 클릭으로 처리
+        if (linkRef.current && lastTapTimeRef.current === now) {
+          linkRef.current.click();
+        }
         lastTapTimeRef.current = 0;
       }, 300);
     }
@@ -212,19 +221,28 @@ export function PostCard({
       </header>
 
       {/* 이미지 영역 (1:1 정사각형) */}
-      <div className="relative w-full aspect-square bg-gray-100 cursor-pointer" onClick={handleDoubleTap}>
-        <Image
-          src={post.image_url}
-          alt={post.caption || "게시물 이미지"}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 630px"
-          priority
+      <div className="relative w-full aspect-square bg-gray-100">
+        <Link href={`/post/${post.id}`} ref={linkRef} className="absolute inset-0 z-0">
+          <Image
+            src={post.image_url}
+            alt={post.caption || "게시물 이미지"}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 630px"
+            priority
+          />
+        </Link>
+        
+        {/* 더블탭 감지 레이어 */}
+        <div
+          className="absolute inset-0 z-10 cursor-pointer"
+          onClick={handleDoubleTap}
+          aria-label="더블탭으로 좋아요"
         />
         
         {/* 더블탭 하트 애니메이션 */}
         {showDoubleTapHeart && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
             <Heart
               className={cn(
                 "w-24 h-24",
@@ -319,12 +337,13 @@ export function PostCard({
         {commentsCount > 0 && (
           <div className="space-y-1">
             {comments.length > 2 && (
-              <button
-                className="text-sm text-[var(--text-secondary)] hover:text-black"
+              <Link
+                href={`/post/${post.id}`}
+                className="text-sm text-[var(--text-secondary)] hover:text-black block"
                 aria-label="댓글 모두 보기"
               >
                 댓글 {commentsCount}개 모두 보기
-              </button>
+              </Link>
             )}
             <CommentList
               postId={post.id}
