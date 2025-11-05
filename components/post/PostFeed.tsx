@@ -142,6 +142,11 @@ export function PostFeed() {
     loadPosts(0, true);
   };
 
+  // 게시물 삭제 핸들러
+  const handlePostDeleted = useCallback((postId: string) => {
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
+  }, []);
+
   // 초기 로딩 중
   if (isLoading) {
     return (
@@ -191,6 +196,7 @@ export function PostFeed() {
           key={post.id}
           post={post}
           initialIsLiked={post.isLiked}
+          onPostDeleted={handlePostDeleted}
         />
       ))}
 
