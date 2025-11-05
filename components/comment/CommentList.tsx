@@ -165,7 +165,7 @@ const CommentListComponent = forwardRef<CommentListRef, CommentListProps>(
               isDeleting && "opacity-50"
             )}
           >
-            <Link href={`/profile/${comment.user.id}`}>
+            <Link href={`/profile/${comment.user.clerk_id}`}>
               <Avatar className="w-6 h-6 flex-shrink-0">
                 <AvatarImage
                   src={undefined} // Clerk 프로필 이미지는 추후 연동
@@ -180,7 +180,7 @@ const CommentListComponent = forwardRef<CommentListRef, CommentListProps>(
               <div className="flex items-start gap-2">
                 <div className="flex-1">
                   <Link
-                    href={`/profile/${comment.user.id}`}
+                    href={`/profile/${comment.user.clerk_id}`}
                     className="font-semibold text-sm hover:opacity-50 transition-opacity mr-2"
                   >
                     {comment.user.name}

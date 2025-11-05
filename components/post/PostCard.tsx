@@ -291,7 +291,7 @@ export function PostCard({
       {/* 헤더 영역 (60px) */}
       <header className="flex items-center justify-between px-4 py-3 h-[60px]">
         <div className="flex items-center gap-3">
-          <Link href={`/profile/${post.user.id}`}>
+          <Link href={`/profile/${post.user.clerk_id}`}>
             <Avatar className="w-8 h-8">
               <AvatarImage
                 src={undefined} // Clerk 프로필 이미지는 추후 연동
@@ -304,7 +304,7 @@ export function PostCard({
           </Link>
           <div className="flex flex-col">
             <Link
-              href={`/profile/${post.user.id}`}
+              href={`/profile/${post.user.clerk_id}`}
               className="font-semibold text-sm hover:opacity-50 transition-opacity"
             >
               {post.user.name}
@@ -430,7 +430,7 @@ export function PostCard({
         {post.caption && (
           <div className="text-sm">
             <Link
-              href={`/profile/${post.user.id}`}
+              href={`/profile/${post.user.clerk_id}`}
               className="font-semibold hover:opacity-50 transition-opacity mr-2"
             >
               {post.user.name}

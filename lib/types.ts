@@ -152,3 +152,34 @@ export interface CommentWithUser extends Comment {
   user: User;
 }
 
+/**
+ * 사용자 통계 타입
+ * @see user_stats 뷰
+ */
+export interface UserStats {
+  /** 사용자 ID (UUID) */
+  user_id: string;
+  /** Clerk 인증 사용자 ID */
+  clerk_id: string;
+  /** 사용자 이름 */
+  name: string;
+  /** 게시물 수 */
+  posts_count: number;
+  /** 팔로워 수 */
+  followers_count: number;
+  /** 팔로잉 수 */
+  following_count: number;
+}
+
+/**
+ * 사용자 + 통계 정보
+ */
+export interface UserWithStats extends User {
+  /** 게시물 수 */
+  posts_count: number;
+  /** 팔로워 수 */
+  followers_count: number;
+  /** 팔로잉 수 */
+  following_count: number;
+}
+

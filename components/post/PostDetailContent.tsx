@@ -319,7 +319,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
             {/* 헤더 영역 (60px) */}
             <header className="flex items-center justify-between px-4 py-3 h-[60px] border-b border-[var(--instagram-border)] flex-shrink-0">
               <div className="flex items-center gap-3">
-                <Link href={`/profile/${post.user.id}`}>
+                <Link href={`/profile/${post.user.clerk_id}`}>
                   <Avatar className="w-8 h-8">
                     <AvatarImage
                       src={undefined}
@@ -332,7 +332,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
                 </Link>
                 <div className="flex flex-col">
                   <Link
-                    href={`/profile/${post.user.id}`}
+                    href={`/profile/${post.user.clerk_id}`}
                     className="font-semibold text-sm hover:opacity-50 transition-opacity"
                   >
                     {post.user.name}
@@ -375,7 +375,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
               {post.caption && (
                 <div className="text-sm pb-2">
                   <Link
-                    href={`/profile/${post.user.id}`}
+                    href={`/profile/${post.user.clerk_id}`}
                     className="font-semibold hover:opacity-50 transition-opacity mr-2"
                   >
                     {post.user.name}
@@ -471,7 +471,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
           {/* 헤더 영역 (60px) */}
           <header className="flex items-center justify-between px-4 py-3 h-[60px] border-b border-[var(--instagram-border)]">
             <div className="flex items-center gap-3">
-              <Link href={`/profile/${post.user.id}`}>
+              <Link href={`/profile/${post.user.clerk_id}`}>
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={undefined} alt={post.user.name} />
                   <AvatarFallback className="text-xs">
@@ -481,7 +481,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
               </Link>
               <div className="flex flex-col">
                 <Link
-                  href={`/profile/${post.user.id}`}
+                  href={`/profile/${post.user.clerk_id}`}
                   className="font-semibold text-sm hover:opacity-50 transition-opacity"
                 >
                   {post.user.name}
@@ -595,7 +595,7 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
             {post.caption && (
               <div className="text-sm">
                 <Link
-                  href={`/profile/${post.user.id}`}
+                  href={`/profile/${post.user.clerk_id}`}
                   className="font-semibold hover:opacity-50 transition-opacity mr-2"
                 >
                   {post.user.name}
