@@ -16,37 +16,96 @@
  * @dependencies
  * - @/components/post/PostDetailContent: 게시물 상세 컨텐츠 컴포넌트
  * - @/lib/types: PostWithUserAndStats 타입
+ * - @/lib/supabase/service-role: Supabase service role 클라이언트
+ * - @clerk/nextjs/server: Clerk 인증
  */
 
 import { Suspense } from "react";
-import { headers } from "next/headers";
 import { PostDetailContent } from "@/components/post/PostDetailContent";
 import { PostDetailSkeleton } from "@/components/post/PostDetailSkeleton";
 import { notFound } from "next/navigation";
+import { getServiceRoleClient } from "@/lib/supabase/service-role";
+import { auth } from "@clerk/nextjs/server";
+import type { PostWithUserAndStats } from "@/lib/types";
 
 interface PostDetailPageProps {
   params: Promise<{ postId: string }>;
 }
 
-async function fetchPost(postId: string) {
+async function fetchPost(postId: string): Promise<PostWithUserAndStats | null> {
   try {
-    const headersList = await headers();
-    const host = headersList.get("host");
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    const baseUrl = `${protocol}://${host}`;
+    const supabase = getServiceRoleClient();
 
-    const response = await fetch(`${baseUrl}/api/posts/${postId}`, {
-      cache: "no-store",
-    });
+    // 게시물 조회
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("id", postId)
+      .single();
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error("Failed to fetch post");
+    if (postError || !post) {
+      console.error("Error fetching post:", postError);
+      return null;
     }
 
-    return await response.json();
+    // 통계 정보 가져오기
+    const { data: stat, error: statError } = await supabase
+      .from("post_stats")
+      .select("*")
+      .eq("post_id", postId)
+      .single();
+
+    if (statError) {
+      console.error("Error fetching post stats:", statError);
+      // 통계 조회 실패해도 게시물은 반환
+    }
+
+    // 작성자 정보 가져오기
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", post.user_id)
+      .single();
+
+    if (userError || !user) {
+      console.error("Error fetching user:", userError);
+      return null;
+    }
+
+    // 현재 사용자의 좋아요 여부 확인
+    const { userId } = await auth();
+    let isLiked = false;
+
+    if (userId) {
+      // Clerk userId로 Supabase users 테이블에서 id 찾기
+      const { data: currentUser } = await supabase
+        .from("users")
+        .select("id")
+        .eq("clerk_id", userId)
+        .single();
+
+      if (currentUser) {
+        const { data: like } = await supabase
+          .from("likes")
+          .select("id")
+          .eq("post_id", postId)
+          .eq("user_id", currentUser.id)
+          .single();
+
+        isLiked = !!like;
+      }
+    }
+
+    // 응답 데이터 구성
+    const postWithUserAndStats: PostWithUserAndStats = {
+      ...post,
+      user,
+      likes_count: stat ? Number(stat.likes_count) || 0 : 0,
+      comments_count: stat ? Number(stat.comments_count) || 0 : 0,
+      isLiked,
+    };
+
+    return postWithUserAndStats;
   } catch (error) {
     console.error("Error fetching post:", error);
     return null;
