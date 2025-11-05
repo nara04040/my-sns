@@ -24,6 +24,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import {
   Heart,
@@ -31,10 +32,27 @@ import {
   Send,
   Bookmark,
   MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { CommentList } from "@/components/comment/CommentList";
 import { CommentForm } from "@/components/comment/CommentForm";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 import type { PostWithUserAndStats, CommentWithUser } from "@/lib/types";
@@ -45,13 +63,19 @@ interface PostDetailContentProps {
 }
 
 export function PostDetailContent({ post }: PostDetailContentProps) {
-  const { userId: clerkUserId } = useAuth();
+  const router = useRouter();
+  const { userId: clerkUserId, isLoaded: isClerkLoaded } = useAuth();
+  const supabase = useClerkSupabaseClient();
   const [isLiked, setIsLiked] = useState(post.isLiked ?? false);
   const [likesCount, setLikesCount] = useState(post.likes_count);
   const [isAnimating, setIsAnimating] = useState(false);
   const [comments, setComments] = useState<CommentWithUser[]>([]);
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
   const [showFullCaption, setShowFullCaption] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isOwnPost, setIsOwnPost] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 더블탭 좋아요 관련 상태
   const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
@@ -66,6 +90,42 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
 
   // 캡션 표시 여부 결정
   const shouldShowMore = post.caption && post.caption.length > 100;
+
+  // Clerk 사용자 ID로 Supabase user ID 조회 및 본인 게시물 확인
+  useEffect(() => {
+    if (!isClerkLoaded || !clerkUserId) {
+      setCurrentUserId(null);
+      setIsOwnPost(false);
+      return;
+    }
+
+    const fetchCurrentUserId = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("id")
+          .eq("clerk_id", clerkUserId)
+          .single();
+
+        if (error) {
+          console.error("Error fetching current user ID:", error);
+          setCurrentUserId(null);
+          setIsOwnPost(false);
+          return;
+        }
+
+        const userId = data?.id || null;
+        setCurrentUserId(userId);
+        setIsOwnPost(userId === post.user_id);
+      } catch (error) {
+        console.error("Error fetching current user ID:", error);
+        setCurrentUserId(null);
+        setIsOwnPost(false);
+      }
+    };
+
+    fetchCurrentUserId();
+  }, [isClerkLoaded, clerkUserId, supabase, post.user_id]);
 
   // 더블탭 감지 및 좋아요 처리
   const handleDoubleTap = () => {
@@ -189,6 +249,34 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
     setCommentsCount((prev) => Math.max(0, prev - 1));
   };
 
+  // 게시물 삭제 핸들러
+  const handleDeletePost = async () => {
+    if (!isOwnPost || isDeleting) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Failed to delete post:", error);
+        alert("게시물 삭제에 실패했습니다.");
+        setIsDeleting(false);
+        return;
+      }
+
+      // 삭제 성공 시 피드로 리다이렉트
+      router.push("/");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("게시물 삭제 중 오류가 발생했습니다.");
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-[935px] mx-auto">
       <article className="bg-[var(--instagram-card-background)] border border-[var(--instagram-border)] rounded-sm overflow-hidden">
@@ -254,12 +342,28 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
                   </span>
                 </div>
               </div>
-              <button
-                className="p-1 hover:opacity-50 transition-opacity"
-                aria-label="더보기 메뉴"
-              >
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
+              {isOwnPost && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="p-1 hover:opacity-50 transition-opacity"
+                      aria-label="더보기 메뉴"
+                    >
+                      <MoreHorizontal className="w-5 h-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      삭제
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </header>
 
             {/* 댓글 목록 영역 (스크롤 가능) */}
@@ -387,12 +491,28 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
                 </span>
               </div>
             </div>
-            <button
-              className="p-1 hover:opacity-50 transition-opacity"
-              aria-label="더보기 메뉴"
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
+            {isOwnPost && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="p-1 hover:opacity-50 transition-opacity"
+                    aria-label="더보기 메뉴"
+                  >
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    삭제
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </header>
 
           {/* 이미지 영역 */}
@@ -518,6 +638,34 @@ export function PostDetailContent({ post }: PostDetailContentProps) {
           <CommentForm postId={post.id} onCommentAdded={handleCommentAdded} />
         </div>
       </article>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>게시물 삭제</DialogTitle>
+            <DialogDescription>
+              정말 이 게시물을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeletePost}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "삭제 중..." : "삭제"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
