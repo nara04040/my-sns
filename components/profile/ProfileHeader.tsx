@@ -22,7 +22,7 @@
  * - @/lib/types: UserWithStats 타입
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,29 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ userId, profileData }: ProfileHeaderProps) {
   const { userId: currentClerkUserId, isLoaded: isClerkLoaded } = useAuth();
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  
+  // 팔로우 상태 관리
+  const [isFollowing, setIsFollowing] = useState<boolean | null>(null); // null = 로딩 중
+  const [isLoading, setIsLoading] = useState(false);
+  const [followersCount, setFollowersCount] = useState(profileData.followers_count);
+
+  // 통계 숫자 포맷팅 (1,234 형식)
+  const formatNumber = (num: number): string => {
+    return num.toLocaleString("ko-KR");
+  };
+
+  // 팔로우 상태 확인 API 호출 (useCallback으로 메모이제이션)
+  const checkFollowStatus = useCallback(
+    async (followingId: string): Promise<boolean> => {
+      const response = await fetch(`/api/follows?followingId=${followingId}`);
+      if (!response.ok) {
+        throw new Error("Failed to check follow status");
+      }
+      const data = await response.json();
+      return data.isFollowing;
+    },
+    []
+  );
 
   // 본인 프로필인지 확인
   useEffect(() => {
@@ -48,9 +71,84 @@ export function ProfileHeader({ userId, profileData }: ProfileHeaderProps) {
     }
   }, [isClerkLoaded, currentClerkUserId, userId]);
 
-  // 통계 숫자 포맷팅 (1,234 형식)
-  const formatNumber = (num: number): string => {
-    return num.toLocaleString("ko-KR");
+  // 초기 팔로우 상태 로드 (다른 사용자 프로필일 때만)
+  useEffect(() => {
+    if (!isOwnProfile && isClerkLoaded && currentClerkUserId) {
+      checkFollowStatus(userId)
+        .then((following) => {
+          setIsFollowing(following);
+        })
+        .catch((error) => {
+          console.error("Error checking follow status:", error);
+          // 에러 발생 시 기본값으로 false 설정
+          setIsFollowing(false);
+        });
+    } else if (isOwnProfile) {
+      // 본인 프로필인 경우 팔로우 상태 불필요
+      setIsFollowing(null);
+    }
+  }, [userId, isOwnProfile, isClerkLoaded, currentClerkUserId, checkFollowStatus]);
+
+  // 팔로우 추가 API 호출
+  const followUser = async (followingId: string): Promise<void> => {
+    const response = await fetch("/api/follows", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ followingId }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Failed to follow user");
+    }
+  };
+
+  // 언팔로우 API 호출
+  const unfollowUser = async (followingId: string): Promise<void> => {
+    const response = await fetch(`/api/follows?followingId=${followingId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Failed to unfollow user");
+    }
+  };
+
+  // 팔로우 토글 핸들러 (Optimistic UI)
+  const handleFollowToggle = async () => {
+    // 로딩 중이거나 상태가 아직 확인되지 않은 경우 무시
+    if (isLoading || isFollowing === null) {
+      return;
+    }
+
+    const previousIsFollowing = isFollowing;
+    const previousFollowersCount = followersCount;
+
+    // Optimistic UI 업데이트
+    setIsFollowing(!previousIsFollowing);
+    setFollowersCount(
+      previousIsFollowing
+        ? previousFollowersCount - 1
+        : previousFollowersCount + 1
+    );
+    setIsLoading(true);
+
+    try {
+      if (previousIsFollowing) {
+        await unfollowUser(userId);
+      } else {
+        await followUser(userId);
+      }
+    } catch (error) {
+      // 에러 발생 시 롤백
+      setIsFollowing(previousIsFollowing);
+      setFollowersCount(previousFollowersCount);
+      console.error("Failed to toggle follow:", error);
+      // TODO: 사용자에게 에러 메시지 표시 (토스트 등)
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -88,7 +186,7 @@ export function ProfileHeader({ userId, profileData }: ProfileHeaderProps) {
             </div>
             <div>
               <span className="font-semibold text-[#262626]">
-                {formatNumber(profileData.followers_count)}
+                {formatNumber(followersCount)}
               </span>{" "}
               <span className="text-[#262626]">팔로워</span>
             </div>
@@ -103,16 +201,42 @@ export function ProfileHeader({ userId, profileData }: ProfileHeaderProps) {
           {/* 버튼 영역 */}
           <div className="mt-4">
             {!isOwnProfile && (
-              <Button
-                variant="default"
-                style={{
-                  backgroundColor: "var(--instagram-blue)",
-                }}
-                className="text-white hover:opacity-90"
-                // onClick 핸들러는 팔로우 API 연동 시 추가
-              >
-                팔로우
-              </Button>
+              <>
+                {isFollowing === null ? (
+                  // 로딩 중: 비활성화된 버튼 표시
+                  <Button
+                    variant="default"
+                    disabled
+                    className="opacity-50 cursor-not-allowed"
+                  >
+                    팔로우
+                  </Button>
+                ) : isFollowing ? (
+                  // 팔로우 중: 회색 버튼, hover 시 빨간 테두리 + "언팔로우" 텍스트
+                  <Button
+                    variant="outline"
+                    onClick={handleFollowToggle}
+                    disabled={isLoading}
+                    className="border-[#dbdbdb] bg-white text-[#262626] hover:border-red-500 hover:text-red-500 transition-colors group"
+                  >
+                    <span className="group-hover:hidden">팔로잉</span>
+                    <span className="hidden group-hover:inline">언팔로우</span>
+                  </Button>
+                ) : (
+                  // 미팔로우: 파란색 버튼
+                  <Button
+                    variant="default"
+                    onClick={handleFollowToggle}
+                    disabled={isLoading}
+                    style={{
+                      backgroundColor: "var(--instagram-blue)",
+                    }}
+                    className="text-white hover:opacity-90"
+                  >
+                    팔로우
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
