@@ -13,14 +13,17 @@
  * - lucide-react: 아이콘
  * - next/link: 라우팅
  * - @/components/ui/button: 버튼 컴포넌트
+ * - @/components/post/CreatePostModal: 게시물 작성 모달
  */
 
+import { useState } from "react";
 import { Home, Search, PlusSquare, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CreatePostModal } from "@/components/post/CreatePostModal";
 
 interface SidebarItem {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -59,11 +62,17 @@ const menuItems: SidebarItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
 
   // 프로필 링크는 현재 사용자 ID로 설정
   const profileHref = isLoaded && user ? `/profile/${user.id}` : "/profile";
 
   return (
+    <>
+      <CreatePostModal
+        open={isCreatePostModalOpen}
+        onOpenChange={setIsCreatePostModalOpen}
+      />
     <aside className="fixed left-0 top-0 h-screen bg-white border-r border-[#dbdbdb] z-40 hidden md:block">
       {/* 데스크톱 사이드바 (1024px+) */}
       <div className="hidden lg:block w-[244px] h-full">
@@ -88,6 +97,29 @@ export function Sidebar() {
                 // 프로필 링크는 동적으로 설정
                 const href =
                   item.href === "/profile" ? profileHref : item.href;
+
+                // "만들기" 메뉴는 모달을 열도록 처리
+                if (item.href === "/create") {
+                  return (
+                    <button
+                      key={item.href}
+                      onClick={() => setIsCreatePostModalOpen(true)}
+                      className={cn(
+                        "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors w-full text-left",
+                        "hover:bg-[#fafafa]",
+                        isActive
+                          ? "font-semibold text-[#262626]"
+                          : "font-normal text-[#262626]"
+                      )}
+                    >
+                      <Icon
+                        className="w-6 h-6"
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      <span className="text-sm">{item.label}</span>
+                    </button>
+                  );
+                }
 
                 return (
                   <Link
@@ -158,6 +190,27 @@ export function Sidebar() {
                 const href =
                   item.href === "/profile" ? profileHref : item.href;
 
+                // "만들기" 메뉴는 모달을 열도록 처리
+                if (item.href === "/create") {
+                  return (
+                    <button
+                      key={item.href}
+                      onClick={() => setIsCreatePostModalOpen(true)}
+                      className={cn(
+                        "p-3 rounded-lg transition-colors",
+                        "hover:bg-[#fafafa]",
+                        isActive && "bg-[#fafafa]"
+                      )}
+                      title={item.label}
+                    >
+                      <Icon
+                        className="w-6 h-6"
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                    </button>
+                  );
+                }
+
                 return (
                   <Link
                     key={item.href}
@@ -203,6 +256,7 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }
 
