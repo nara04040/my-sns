@@ -20,7 +20,7 @@
  * - @/lib/utils: 유틸리티 함수
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
@@ -48,10 +48,70 @@ export function PostCard({
   const [isAnimating, setIsAnimating] = useState(false);
   const [showFullCaption, setShowFullCaption] = useState(false);
   const [comments, setComments] = useState<CommentWithUser[]>(initialComments);
+  
+  // 더블탭 좋아요 관련 상태
+  const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
+  const [doubleTapHeartType, setDoubleTapHeartType] = useState<"like" | "unlike">("like");
+  const lastTapTimeRef = useRef<number>(0);
+  const doubleTapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 캡션 표시 여부 결정 (2줄 초과 시 "... 더 보기" 표시)
   const captionLines = post.caption?.split("\n") || [];
   const shouldShowMore = post.caption && post.caption.length > 100;
+
+  // 더블탭 감지 및 좋아요 처리
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapTimeRef.current;
+
+    // 이전 탭으로부터 300ms 이내면 더블탭으로 판단
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      // 애니메이션 중이면 무시
+      if (showDoubleTapHeart) {
+        return;
+      }
+
+      // 좋아요 토글 (현재 상태의 반대로 설정)
+      const willLike = !isLiked;
+      setDoubleTapHeartType(willLike ? "like" : "unlike");
+      setShowDoubleTapHeart(true);
+
+      // 좋아요 API 호출
+      handleLike();
+
+      // 1초 후 애니메이션 제거
+      setTimeout(() => {
+        setShowDoubleTapHeart(false);
+      }, 1000);
+
+      // 타이머 초기화
+      lastTapTimeRef.current = 0;
+      if (doubleTapTimeoutRef.current) {
+        clearTimeout(doubleTapTimeoutRef.current);
+        doubleTapTimeoutRef.current = null;
+      }
+    } else {
+      // 첫 번째 탭이거나 시간이 지난 경우
+      lastTapTimeRef.current = now;
+
+      // 300ms 후 타이머 초기화 (더블탭이 아닌 경우)
+      if (doubleTapTimeoutRef.current) {
+        clearTimeout(doubleTapTimeoutRef.current);
+      }
+      doubleTapTimeoutRef.current = setTimeout(() => {
+        lastTapTimeRef.current = 0;
+      }, 300);
+    }
+  };
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (doubleTapTimeoutRef.current) {
+        clearTimeout(doubleTapTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // 좋아요 토글
   const handleLike = async () => {
@@ -148,7 +208,7 @@ export function PostCard({
       </header>
 
       {/* 이미지 영역 (1:1 정사각형) */}
-      <div className="relative w-full aspect-square bg-gray-100">
+      <div className="relative w-full aspect-square bg-gray-100 cursor-pointer" onClick={handleDoubleTap}>
         <Image
           src={post.image_url}
           alt={post.caption || "게시물 이미지"}
@@ -157,6 +217,21 @@ export function PostCard({
           sizes="(max-width: 768px) 100vw, 630px"
           priority
         />
+        
+        {/* 더블탭 하트 애니메이션 */}
+        {showDoubleTapHeart && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <Heart
+              className={cn(
+                "w-24 h-24",
+                doubleTapHeartType === "like"
+                  ? "fill-[var(--like)] text-[var(--like)]"
+                  : "text-white stroke-2",
+                "animate-[heartPulse_1s_ease-out_forwards]"
+              )}
+            />
+          </div>
+        )}
       </div>
 
       {/* 액션 버튼 영역 (48px) */}
