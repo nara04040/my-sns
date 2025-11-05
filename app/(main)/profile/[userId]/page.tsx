@@ -20,6 +20,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { PostGrid } from "@/components/profile/PostGrid";
 import type { UserWithStats } from "@/lib/types";
 
 interface ProfilePageProps {
@@ -89,22 +90,7 @@ export default async function UserProfilePage({
 
       {/* 게시물 그리드 영역 */}
       <div className="w-full">
-        {/* 플레이스홀더: 향후 PostGrid 컴포넌트로 교체 예정 */}
-        <div className="grid grid-cols-3 gap-1 md:gap-4">
-          {/* 게시물 썸네일 플레이스홀더 (6개) */}
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="aspect-square bg-gray-200 rounded-sm"
-              role="presentation"
-            />
-          ))}
-        </div>
-
-        {/* 게시물이 없을 때 표시할 메시지 (향후 조건부 렌더링으로 추가) */}
-        <div className="hidden text-center py-12">
-          <p className="text-[#8e8e8e]">게시물이 없습니다</p>
-        </div>
+        <PostGrid userId={userId} />
       </div>
     </div>
   );

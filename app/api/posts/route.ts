@@ -9,6 +9,7 @@ import type { PostWithUserAndStats } from "@/lib/types";
  *
  * @query limit - 가져올 게시물 개수 (기본값: 10)
  * @query offset - 건너뛸 개수 (기본값: 0)
+ * @query userId - 특정 사용자의 게시물만 조회 (Clerk user ID, 선택적)
  *
  * @returns 게시물 목록 (사용자 정보, 통계 포함)
  */
@@ -17,16 +18,43 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const clerkUserId = searchParams.get("userId"); // Clerk user ID (선택적)
 
     const supabase = getServiceRoleClient();
 
-    // posts 테이블과 post_stats 뷰를 조인하여 게시물과 통계 가져오기
-    // post_stats 뷰에는 updated_at이 없으므로 posts 테이블과 조인 필요
-    const { data: posts, error: postsError } = await supabase
+    // userId 파라미터가 있으면 Clerk ID → Supabase ID 변환
+    let supabaseUserId: string | null = null;
+    if (clerkUserId) {
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("clerk_id", clerkUserId)
+        .single();
+
+      if (userError || !user) {
+        // 사용자를 찾을 수 없으면 빈 배열 반환
+        return NextResponse.json({ posts: [], hasMore: false });
+      }
+
+      supabaseUserId = user.id;
+    }
+
+    // 게시물 조회 쿼리 구성
+    let postsQuery = supabase
       .from("posts")
       .select("*")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order("created_at", { ascending: false });
+
+    // 특정 사용자의 게시물만 조회하는 경우 필터링
+    if (supabaseUserId) {
+      postsQuery = postsQuery.eq("user_id", supabaseUserId);
+    }
+
+    // 페이지네이션 적용
+    const { data: posts, error: postsError } = await postsQuery.range(
+      offset,
+      offset + limit - 1
+    );
 
     if (postsError) {
       console.error("Error fetching posts:", postsError);
@@ -121,9 +149,14 @@ export async function GET(request: NextRequest) {
     });
 
     // 다음 페이지 존재 여부 확인
-    const { count } = await supabase
-      .from("posts")
-      .select("*", { count: "exact", head: true });
+    let countQuery = supabase.from("posts").select("*", { count: "exact", head: true });
+    
+    // 특정 사용자의 게시물만 조회하는 경우 해당 사용자의 게시물 수만 카운트
+    if (supabaseUserId) {
+      countQuery = countQuery.eq("user_id", supabaseUserId);
+    }
+    
+    const { count } = await countQuery;
     const hasMore = (count || 0) > offset + limit;
 
     // 각 게시물에 isLiked 속성 추가
