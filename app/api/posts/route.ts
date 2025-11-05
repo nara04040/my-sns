@@ -145,3 +145,171 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * 게시물 작성 API
+ * POST /api/posts
+ *
+ * @body FormData
+ *   - image: File (이미지 파일, 최대 5MB)
+ *   - caption: string (최대 2,200자, 선택적)
+ *
+ * @returns 생성된 게시물 정보
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // 인증 확인
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const supabase = getServiceRoleClient();
+
+    // Clerk userId로 Supabase users 테이블에서 id 찾기
+    const { data: currentUser, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("clerk_id", userId)
+      .single();
+
+    if (userError || !currentUser) {
+      console.error("Error fetching user:", userError);
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // FormData 파싱
+    const formData = await request.formData();
+    const imageFile = formData.get("image") as File | null;
+    const caption = formData.get("caption") as string | null;
+
+    // 이미지 파일 검증
+    if (!imageFile) {
+      return NextResponse.json(
+        { error: "Image file is required" },
+        { status: 400 }
+      );
+    }
+
+    // 파일 형식 검증 (이미지 파일만 허용)
+    const allowedMimeTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedMimeTypes.includes(imageFile.type)) {
+      return NextResponse.json(
+        { error: "Invalid file type. Only image files are allowed." },
+        { status: 400 }
+      );
+    }
+
+    // 파일 크기 검증 (최대 5MB)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (imageFile.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: "File size exceeds 5MB limit" },
+        { status: 400 }
+      );
+    }
+
+    // 캡션 검증 (최대 2,200자)
+    if (caption && caption.length > 2200) {
+      return NextResponse.json(
+        { error: "Caption exceeds 2,200 character limit" },
+        { status: 400 }
+      );
+    }
+
+    // 파일명 생성 (타임스탬프 + 랜덤 문자열)
+    const fileExt = imageFile.name.split(".").pop() || "jpg";
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(7)}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
+
+    const STORAGE_BUCKET =
+      process.env.NEXT_PUBLIC_STORAGE_BUCKET || "uploads";
+
+    // Supabase Storage에 이미지 업로드
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(filePath, imageFile, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Error uploading image:", uploadError);
+      return NextResponse.json(
+        { error: "Failed to upload image", details: uploadError.message },
+        { status: 500 }
+      );
+    }
+
+    // Public URL 가져오기
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
+
+    // 게시물 생성
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .insert({
+        user_id: currentUser.id,
+        image_url: publicUrl,
+        caption: caption || null,
+      })
+      .select()
+      .single();
+
+    if (postError) {
+      console.error("Error creating post:", postError);
+      // 업로드 실패 시 이미지 삭제 시도
+      await supabase.storage.from(STORAGE_BUCKET).remove([filePath]);
+      return NextResponse.json(
+        { error: "Failed to create post", details: postError.message },
+        { status: 500 }
+      );
+    }
+
+    // 작성자 정보 가져오기
+    const { data: user } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", currentUser.id)
+      .single();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 500 }
+      );
+    }
+
+    // 응답 데이터 구성
+    const postWithUser = {
+      ...post,
+      user,
+      likes_count: 0,
+      comments_count: 0,
+      isLiked: false,
+    };
+
+    return NextResponse.json(postWithUser, { status: 201 });
+  } catch (error) {
+    console.error("Error in POST /api/posts:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+

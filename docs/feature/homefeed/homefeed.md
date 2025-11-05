@@ -25,6 +25,6 @@
 ## API 라우트
 
 - [x] `app/api/posts/route.ts` - GET (페이지네이션)
-- [ ] `app/api/posts/route.ts` - POST (게시물 작성)
-- [ ] `app/api/posts/[postId]/route.ts` - GET (상세)
-- [ ] `app/api/posts/[postId]/route.ts` - DELETE (삭제)
+- [x] `app/api/posts/route.ts` - POST (게시물 작성)
+- [x] `app/api/posts/[postId]/route.ts` - GET (상세)
+- [x] `app/api/posts/[postId]/route.ts` - DELETE (삭제)
