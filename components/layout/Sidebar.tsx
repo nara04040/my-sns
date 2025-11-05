@@ -17,10 +17,10 @@
  */
 
 import { useState } from "react";
-import { Home, Search, PlusSquare, User } from "lucide-react";
+import { Home, Search, PlusSquare, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, SignOutButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreatePostModal } from "@/components/post/CreatePostModal";
@@ -86,26 +86,48 @@ export function Sidebar() {
 
           {/* 인증된 경우: 메뉴 아이템 */}
           {isLoaded && user ? (
-            <nav className="flex flex-col gap-1">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  item.isActive?.(pathname) ??
-                  (pathname === item.href ||
-                    (item.href === "/profile" && pathname.startsWith("/profile")));
+            <>
+              <nav className="flex flex-col gap-1">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    item.isActive?.(pathname) ??
+                    (pathname === item.href ||
+                      (item.href === "/profile" && pathname.startsWith("/profile")));
 
-                // 프로필 링크는 동적으로 설정
-                const href =
-                  item.href === "/profile" ? profileHref : item.href;
+                  // 프로필 링크는 동적으로 설정
+                  const href =
+                    item.href === "/profile" ? profileHref : item.href;
 
-                // "만들기" 메뉴는 모달을 열도록 처리
-                if (item.href === "/create") {
+                  // "만들기" 메뉴는 모달을 열도록 처리
+                  if (item.href === "/create") {
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => setIsCreatePostModalOpen(true)}
+                        className={cn(
+                          "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors w-full text-left",
+                          "hover:bg-[#fafafa]",
+                          isActive
+                            ? "font-semibold text-[#262626]"
+                            : "font-normal text-[#262626]"
+                        )}
+                      >
+                        <Icon
+                          className="w-6 h-6"
+                          strokeWidth={isActive ? 2.5 : 2}
+                        />
+                        <span className="text-sm">{item.label}</span>
+                      </button>
+                    );
+                  }
+
                   return (
-                    <button
+                    <Link
                       key={item.href}
-                      onClick={() => setIsCreatePostModalOpen(true)}
+                      href={href}
                       className={cn(
-                        "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors w-full text-left",
+                        "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors",
                         "hover:bg-[#fafafa]",
                         isActive
                           ? "font-semibold text-[#262626]"
@@ -117,31 +139,27 @@ export function Sidebar() {
                         strokeWidth={isActive ? 2.5 : 2}
                       />
                       <span className="text-sm">{item.label}</span>
-                    </button>
+                    </Link>
                   );
-                }
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={href}
+                })}
+              </nav>
+              
+              {/* 로그아웃 버튼 - 하단 고정 */}
+              <div className="mt-auto pb-8">
+                <SignOutButton>
+                  <button
                     className={cn(
-                      "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors",
+                      "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors w-full text-left",
                       "hover:bg-[#fafafa]",
-                      isActive
-                        ? "font-semibold text-[#262626]"
-                        : "font-normal text-[#262626]"
+                      "font-normal text-[#262626]"
                     )}
                   >
-                    <Icon
-                      className="w-6 h-6"
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                    <span className="text-sm">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+                    <LogOut className="w-6 h-6" strokeWidth={2} />
+                    <span className="text-sm">로그아웃</span>
+                  </button>
+                </SignOutButton>
+              </div>
+            </>
           ) : (
             /* 인증되지 않은 경우: 로그인/회원가입 버튼 */
             <div className="flex flex-col gap-3 mt-auto pb-8">
@@ -178,24 +196,44 @@ export function Sidebar() {
 
           {/* 인증된 경우: 메뉴 아이템 (아이콘만) */}
           {isLoaded && user ? (
-            <nav className="flex flex-col gap-4 items-center">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  item.isActive?.(pathname) ??
-                  (pathname === item.href ||
-                    (item.href === "/profile" && pathname.startsWith("/profile")));
+            <>
+              <nav className="flex flex-col gap-4 items-center">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    item.isActive?.(pathname) ??
+                    (pathname === item.href ||
+                      (item.href === "/profile" && pathname.startsWith("/profile")));
 
-                // 프로필 링크는 동적으로 설정
-                const href =
-                  item.href === "/profile" ? profileHref : item.href;
+                  // 프로필 링크는 동적으로 설정
+                  const href =
+                    item.href === "/profile" ? profileHref : item.href;
 
-                // "만들기" 메뉴는 모달을 열도록 처리
-                if (item.href === "/create") {
+                  // "만들기" 메뉴는 모달을 열도록 처리
+                  if (item.href === "/create") {
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => setIsCreatePostModalOpen(true)}
+                        className={cn(
+                          "p-3 rounded-lg transition-colors",
+                          "hover:bg-[#fafafa]",
+                          isActive && "bg-[#fafafa]"
+                        )}
+                        title={item.label}
+                      >
+                        <Icon
+                          className="w-6 h-6"
+                          strokeWidth={isActive ? 2.5 : 2}
+                        />
+                      </button>
+                    );
+                  }
+
                   return (
-                    <button
+                    <Link
                       key={item.href}
-                      onClick={() => setIsCreatePostModalOpen(true)}
+                      href={href}
                       className={cn(
                         "p-3 rounded-lg transition-colors",
                         "hover:bg-[#fafafa]",
@@ -207,29 +245,26 @@ export function Sidebar() {
                         className="w-6 h-6"
                         strokeWidth={isActive ? 2.5 : 2}
                       />
-                    </button>
+                    </Link>
                   );
-                }
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={href}
+                })}
+              </nav>
+              
+              {/* 로그아웃 버튼 - 하단 고정 */}
+              <div className="mt-auto pb-8">
+                <SignOutButton>
+                  <button
                     className={cn(
                       "p-3 rounded-lg transition-colors",
-                      "hover:bg-[#fafafa]",
-                      isActive && "bg-[#fafafa]"
+                      "hover:bg-[#fafafa]"
                     )}
-                    title={item.label}
+                    title="로그아웃"
                   >
-                    <Icon
-                      className="w-6 h-6"
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                  </Link>
-                );
-              })}
-            </nav>
+                    <LogOut className="w-6 h-6" strokeWidth={2} />
+                  </button>
+                </SignOutButton>
+              </div>
+            </>
           ) : (
             /* 인증되지 않은 경우: 로그인/회원가입 링크 (아이콘 대신 텍스트) */
             <div className="flex flex-col gap-3 mt-auto pb-8 items-center w-full px-2">
